@@ -1,0 +1,4 @@
+name = Bugsnag
+description = Bugsnag.com integration.
+core = 7.x
+dependencies[] = libraries

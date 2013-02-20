@@ -1,0 +1,87 @@
+<?php
+
+/**
+ * @file
+ * Bugsnag.com integration.
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function bugsnag_menu() {
+  $items = array();
+  $items['admin/config/development/bugsnag'] = array(
+    'title' => 'Bugsnag',
+    'description' => 'Integrate with Bugsnag.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('bugsnag_form'),
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  return $items;
+}
+
+function bugsnag_form() {
+  $library = libraries_detect('bugsnag');
+  $description = $library['installed'] ? t('Track errors with Bugsnag.') : '<span class="warning">' . t('You must install the Bugsnag library') . '</span>';
+  // @TODO: Do we have a need for the API Key here. We might need to enable
+  // it in settings.php
+  // @TODO: add field for bugsnag_limit: the minimum severity to report.
+  $form['bugsnag_api_key'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Enter your Bugsnag API key.'),
+    '#default_value' => variable_get('bugsnag_api_key', FALSE),
+    '#description' => $description,
+  );
+
+  return system_settings_form($form);
+}
+
+/**
+ * Implements hook_libraries_info().
+ */
+function bugsnag_libraries_info() {
+  $libraries['bugsnag'] = array(
+    'name' => 'Bugsnag',
+    'vendor url' => 'https://bugsnag.com/',
+    'version' => 'v1.0.6',
+    'download url' => 'https://github.com/bugsnag/bugsnag-php/',
+    'path' => 'lib',
+    'files' => array(
+      'php' => array('bugsnag.php'),
+    ),
+  );
+
+  return $libraries;
+}
+
+/**
+ * Implements hook_watchdog().
+ */
+function bugsnag_watchdog($log_entry) {
+
+  // @TODO: Add bugsnag_limit to bugsnag_form().
+  $bugsnag_limit = variable_get('bugsnag_limit', WATCHDOG_ERROR);
+  if (isset($log_entry['severity']) && $log_entry['severity'] > $bugsnag_limit) {
+    return;
+  }
+
+  $severity_list = array(
+    WATCHDOG_EMERGENCY => t('Emergency'),
+    WATCHDOG_ALERT => t('Alert'),
+    WATCHDOG_CRITICAL => t('Critical'),
+    WATCHDOG_ERROR => t('Error'),
+    WATCHDOG_WARNING => t('Warning'),
+    WATCHDOG_NOTICE => t('Notice'),
+    WATCHDOG_INFO => t('Info'),
+    WATCHDOG_DEBUG => t('Debug'),
+  );
+
+  $severity = $severity_list[$log_entry['severity']];
+  $type = $log_entry['type'];
+  $message = $log_entry['message'];
+
+  libraries_load('bugsnag');
+  Bugsnag::notifyError($severity, $type . ': ' . $message);
+}

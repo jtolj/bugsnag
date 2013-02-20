@@ -1,0 +1,27 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the Bugsnag module.
+ */
+
+/**
+ * Implements hook_requirements().
+ */
+function bugsnag_requirements($phase) {
+  $requirements = array();
+
+  if ($phase == 'runtime') {
+    $t = get_t();
+    $library = libraries_detect('bugsnag');
+
+    $requirements['bugsnag'] = array(
+      'title' => $t('Bugsnag library'),
+      'value' => $library['installed'] ? $t('Installed') : $t('Not installed'),
+      'description' => $library['installed'] ? $t('Download Bugsnag to sites/all/libraries') : NULL,
+      'severity' => $library['installed'] ? REQUIREMENT_OK : REQUIREMENT_ERROR,
+    );
+  }
+
+  return $requirements;
+}
