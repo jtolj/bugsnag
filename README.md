@@ -24,7 +24,7 @@ Configuration
     $bugsnag = "sites/all/libraries/bugsnag/lib/bugsnag.php";
     if (file_exists($bugsnag)) {
       require_once("sites/all/libraries/bugsnag/lib/bugsnag.php");
-      Bugsnag::register('9ba15fb15c37851e428fd1781ffdc121');
+      Bugsnag::register('YOUR_API_KEY');
       set_error_handler("Bugsnag::errorHandler");
       set_exception_handler("Bugsnag::exceptionHandler");
     }
