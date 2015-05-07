@@ -42,9 +42,11 @@ function bugsnag_boot() {
     global $user;
     global $bugsnag_client;
 
+    // inclujde library and instantiate
     require_once _bugsnag_get_library_path();
     $bugsnag_client = new Bugsnag_Client(variable_get('bugsnag_apikey', ''));
 
+    // track user if logged in
     if ($user->uid) {
       $bugsnag_client->setUser(array(
         'id' => $user->uid,
@@ -53,6 +55,7 @@ function bugsnag_boot() {
       ));
     }
 
+    // use bugsnag for all errors and exceptions
     set_error_handler(array($bugsnag_client, 'errorHandler'));
     set_exception_handler(array($bugsnag_client, 'exceptionHandler'));
 
