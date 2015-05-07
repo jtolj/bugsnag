@@ -1,4 +1,5 @@
-name = Bugsnag
-description = Bugsnag.com integration.
+name = "Bugsnag"
+description = "Bugsnag v2+ integration"
 core = 7.x
 dependencies[] = libraries
+configure = admin/config/development/bugsnag

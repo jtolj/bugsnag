@@ -1,9 +1,19 @@
 <?php
 
 /**
- * @file
- * Bugsnag.com integration.
+ * @file bugsnag.module
+ *
+ * Integrates Drupal with Bugsnag for error tracking and alerting.
  */
+
+
+/**
+ * Retrieves the path to the PHP library for Bugsnag.
+ */
+function _bugsnag_get_library_path() {
+  return DRUPAL_ROOT . '/sites/all/libraries/bugsnag/src/Bugsnag/Autoload.php';
+}
+
 
 /**
  * Implements hook_menu().
@@ -11,89 +21,40 @@
 function bugsnag_menu() {
   $items = array();
   $items['admin/config/development/bugsnag'] = array(
-    'title' => 'Bugsnag',
-    'description' => 'Integrate with Bugsnag.',
+    'title' => 'Bugsnag settings',
+    'description' => 'Make changes to your Bugsnag settings.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('bugsnag_form'),
-    'access arguments' => array('administer site configuration'),
+    'page arguments' => array('bugsnag_admin_form'),
+    'access arguments' => array('administer bugsnag'),
     'type' => MENU_NORMAL_ITEM,
+    'file' => 'bugsnag.admin.inc',
   );
-
   return $items;
 }
 
-/**
- * Page callback for Bugsnap settings form.
- */
-function bugsnag_form() {
-  $library = libraries_detect('bugsnag');
-  $description = $library['installed'] ? t('Track errors with Bugsnag.') : '<span class="warning">' . t('You must install the Bugsnag library') . '</span>';
-
-  $options = _bugsnag_severity_list();
-
-  $form['bugsnag_limit'] = array(
-    '#type' => 'select',
-    '#title' => t('Minimum severity to report to Bugsnag'),
-    '#options' => $options,
-    '#default_value' => variable_get('bugsnag_limit', WATCHDOG_ERROR),
-    '#description' => $description,
-  );
-
-  return system_settings_form($form);
-}
 
 /**
- * Implements hook_libraries_info().
+ * Implements hook_boot().
  */
-function bugsnag_libraries_info() {
-  $libraries['bugsnag'] = array(
-    'name' => 'Bugsnag',
-    'vendor url' => 'https://bugsnag.com/',
-    'version' => 'v1.0.6',
-    'download url' => 'https://github.com/bugsnag/bugsnag-php/',
-    'path' => 'lib',
-    'files' => array(
-      'php' => array('bugsnag.php'),
-    ),
-  );
+function bugsnag_boot() {
+  $apikey = trim(variable_get('bugsnag_apikey', ''));
+  if (file_exists(_bugsnag_get_library_path()) && !empty($apikey)) {
+    global $user;
+    global $bugsnag_client;
 
-  return $libraries;
-}
+    require_once _bugsnag_get_library_path();
+    $bugsnag_client = new Bugsnag_Client(variable_get('bugsnag_apikey', ''));
 
-/**
- * Implements hook_watchdog().
- */
-function bugsnag_watchdog($log_entry) {
+    if ($user->uid) {
+      $bugsnag_client->setUser(array(
+        'id' => $user->uid,
+        'name' => $user->name,
+        'email' => $user->mail
+      ));
+    }
 
-  $bugsnag_limit = variable_get('bugsnag_limit', WATCHDOG_ERROR);
+    set_error_handler(array($bugsnag_client, 'errorHandler'));
+    set_exception_handler(array($bugsnag_client, 'exceptionHandler'));
 
-  if (isset($log_entry['severity']) && $log_entry['severity'] > $bugsnag_limit) {
-    return;
   }
-
-  $severity_list = _bugsnag_severity_list();
-
-  $severity = $severity_list[$log_entry['severity']];
-  $type = $log_entry['type'];
-  $message = $log_entry['message'];
-
-  libraries_load('bugsnag');
-  Bugsnag::notifyError($severity, $type . ': ' . $message);
-}
-
-
-/**
- * Return watchdog severity options.
- */
-function _bugsnag_severity_list() {
-  return array(
-    WATCHDOG_EMERGENCY => t('Emergency'),
-    WATCHDOG_ALERT => t('Alert'),
-    WATCHDOG_CRITICAL => t('Critical'),
-    WATCHDOG_ERROR => t('Error'),
-    WATCHDOG_WARNING => t('Warning'),
-    WATCHDOG_NOTICE => t('Notice'),
-    WATCHDOG_INFO => t('Info'),
-    WATCHDOG_DEBUG => t('Debug'),
-  );
 }
