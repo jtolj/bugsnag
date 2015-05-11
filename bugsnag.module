@@ -11,23 +11,40 @@
  * Retrieves the path to the PHP library for Bugsnag.
  */
 function _bugsnag_get_library_path() {
-  return DRUPAL_ROOT . '/sites/all/libraries/bugsnag/src/Bugsnag/Autoload.php';
+  return \Drupal::root() . '/sites/all/libraries/bugsnag/src/Bugsnag/Autoload.php';
 }
+
+
+/**
+ * Implements hook_menu().
+ */
+function bugsnag_menu() {
+  $items = array();
+  $items['admin/config/development/bugsnag'] = array(
+    'title' => 'Bugsnag settings',
+    'description' => 'Make changes to your Bugsnag settings.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('bugsnag_admin_form'),
+    'access arguments' => array('administer bugsnag'),
+    'type' => MENU_NORMAL_ITEM,
+    'file' => 'bugsnag.admin.inc',
+  );
+  return $items;
+}
+
 
 /**
  * Implements hook_boot().
  */
 function bugsnag_boot() {
-  $apikey = trim(variable_get('bugsnag_apikey', ''));
+  $apikey = trim(\Drupal::config('bugsnag.settings')->get('bugsnag_apikey'));
   if (file_exists(_bugsnag_get_library_path()) && !empty($apikey)) {
-    global $user;
+    $user = \Drupal::currentUser();
     global $bugsnag_client;
 
-    // inclujde library and instantiate
     require_once _bugsnag_get_library_path();
-    $bugsnag_client = new Bugsnag_Client(variable_get('bugsnag_apikey', ''));
+    $bugsnag_client = new Bugsnag_Client(\Drupal::config('bugsnag.settings')->get('bugsnag_apikey'));
 
-    // track user if logged in
     if ($user->uid) {
       $bugsnag_client->setUser(array(
         'id' => $user->uid,
@@ -36,7 +53,6 @@ function bugsnag_boot() {
       ));
     }
 
-    // use bugsnag for all errors and exceptions
     set_error_handler(array($bugsnag_client, 'errorHandler'));
     set_exception_handler(array($bugsnag_client, 'exceptionHandler'));
 

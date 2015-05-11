@@ -1,0 +1,6 @@
+services:
+  boot_subscriber:
+    class: Drupal\bugsnag\EventSubscriber\BootSubscriber
+    tags:
+      -
+        name: event_subscriber
