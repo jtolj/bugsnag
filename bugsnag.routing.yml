@@ -1,5 +1,5 @@
 bugsnag.admin:
-  path: '/admin/config/bugsnag' 
+  path: '/admin/config/development/bugsnag'
   defaults: 
     _form: '\Drupal\bugsnag\Form\BugsnagSettingsForm'
     _title: 'Bugsnag Settings'

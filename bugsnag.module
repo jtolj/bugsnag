@@ -14,25 +14,6 @@ function _bugsnag_get_library_path() {
   return DRUPAL_ROOT . '/sites/all/libraries/bugsnag/src/Bugsnag/Autoload.php';
 }
 
-
-/**
- * Implements hook_menu().
- */
-function bugsnag_menu() {
-  $items = array();
-  $items['admin/config/development/bugsnag'] = array(
-    'title' => 'Bugsnag settings',
-    'description' => 'Make changes to your Bugsnag settings.',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('bugsnag_admin_form'),
-    'access arguments' => array('administer bugsnag'),
-    'type' => MENU_NORMAL_ITEM,
-    'file' => 'bugsnag.admin.inc',
-  );
-  return $items;
-}
-
-
 /**
  * Implements hook_boot().
  */

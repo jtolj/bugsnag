@@ -1,0 +1,6 @@
+bugsnag.admin:
+  title: Bugsnag
+  description: 'Configure settings for Bugsnag integration.'
+  route_name: bugsnag.admin
+  parent: system.admin_config_development
+  weight: -15

@@ -25,9 +25,13 @@ class BugsnagSettingsForm extends FormBase {
    * {@inheritdoc}.
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
+    $config = \Drupal::configFactory()->get('bugsnag.config');
+    $apiKey = $config->get('api_key');
     $form['api_key'] = array(
       '#type' => 'textfield',
-      '#title' => $this->t('Your Bugsnag API Key')
+      '#title' => $this->t('Your Bugsnag API Key'),
+      '#default_value' => $apiKey,
+      '#description' => $this->t('Add the API key from the Project Settings page of your Bugsnag account.'),
     );
     $form['actions']['#type'] = 'actions';
     $form['actions']['submit'] = array(
