@@ -1,0 +1,7 @@
+bugsnag.admin:
+  path: '/admin/config/bugsnag' 
+  defaults: 
+    _form: '\Drupal\bugsnag\Form\BugsnagSettingsForm'
+    _title: 'Bugsnag Settings'
+  requirements: 
+    _permission: 'access content' 
