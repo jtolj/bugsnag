@@ -3,7 +3,6 @@ description: 'Bugsnag v2+ integration'
 core: 8.x
 dependencies:
   - libraries
-version: 7.x-2.0
 project: bugsnag
-datestamp: '1431042182'
 type: module
+configure: bugsnag.admin_form

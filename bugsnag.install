@@ -13,10 +13,13 @@
  * We'll use this to detect all the requirements for the module are in place.
  */
 function bugsnag_requirements($phase) {
+
+  $bugsnagLibraryPath = '/libraries/bugsnag/src/Bugsnag/Autoload.php';
+
   $requirements = array();
   if ($phase == 'runtime') {
     // Make sure the Bugsnag library exists.
-    if (!file_exists(_bugsnag_get_library_path())) {
+    if (!file_exists($bugsnagLibraryPath)) {
       $requirements['bugsnag_library'] = array(
         'title' => t('Bugsnag library'),
         'value' => t('The Bugsnag library is missing, see the README for instructions on how to download this.'),
@@ -34,15 +37,11 @@ function bugsnag_requirements($phase) {
     // Check for a missing API token.
     $apikey = trim(\Drupal::config('bugsnag.settings')->get('bugsnag_apikey'));
     if (empty($apikey)) {
-      // @FIXME
-// url() expects a route name or an external URI.
-// $requirements['bugsnag_apikey'] = array(
-//         'title' => t('Bugsnag API key missing'),
-//         'value' => t('Bugsnag for PHP is enabled however the API key is missing. Please <a href="!url">configure your settings</a>.', array(
-//           '!url' => url('admin/config/development/bugsnag'),
-//         )),
-//         'severity' => REQUIREMENT_ERROR,
-//       );
+      $requirements['bugsnag_apikey'] = array(
+        'title' => t('Bugsnag API key missing'),
+        'value' => t('Bugsnag for PHP is enabled however the API key is missing. Please configure your settings.'),
+        'severity' => REQUIREMENT_ERROR,
+      );
 
     }
 

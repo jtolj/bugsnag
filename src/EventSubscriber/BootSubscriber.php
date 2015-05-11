@@ -10,6 +10,8 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class BootSubscriber implements EventSubscriberInterface {
 
+  public $bugsnagLibraryPath = '/libraries/bugsnag/src/Bugsnag/Autoload.php';
+
   /**
    * {@inheritdoc}
    */
@@ -19,11 +21,11 @@ class BootSubscriber implements EventSubscriberInterface {
 
   public function onEvent(\Symfony\Component\HttpKernel\Event\GetResponseEvent $event) {
     $apikey = trim(\Drupal::config('bugsnag.settings')->get('bugsnag_apikey'));
-    if (file_exists(_bugsnag_get_library_path()) && !empty($apikey)) {
+    if (file_exists($bugsnagLibraryPath) && !empty($apikey)) {
       $user = \Drupal::currentUser();
       global $bugsnag_client;
 
-      require_once _bugsnag_get_library_path();
+      require_once $bugsnagLibraryPath;
       $bugsnag_client = new Bugsnag_Client(\Drupal::config('bugsnag.settings')->get('bugsnag_apikey'));
 
       if ($user->uid) {

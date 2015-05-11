@@ -24,5 +24,4 @@ Configuration
 Maintainers
 -----------
 
-Shawn Price (langworthy): http://drupal.org/user/25556
 Drew Kennelly (drewkennelly): https://www.drupal.org/u/drewkennelly
