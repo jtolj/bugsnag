@@ -5,6 +5,7 @@
 
 namespace Drupal\bugsnag\EventSubscriber;
 
+use Bugsnag_Client;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
