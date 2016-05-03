@@ -19,6 +19,13 @@ function bugsnag_requirements($phase) {
   $requirements = array();
   if ($phase == 'runtime') {
     // Make sure the Bugsnag library exists.
+    $bugsnagLibrary = libraries_detect('bugsnag');
+
+    if (!empty($bugsnagLibrary)) {
+      $bugsnagLibraryPath = $bugsnagLibrary['library path'] . '/src/Bugsnag/Autoload.php';
+    } else {
+      $bugsnagLibraryPath = null;
+    }
     if (!file_exists($bugsnagLibraryPath)) {
       $requirements['bugsnag_library'] = array(
         'title' => t('Bugsnag library'),

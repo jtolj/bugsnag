@@ -1,0 +1,19 @@
+<?php
+
+/**
+ * @file bugsnag.module
+ *
+ * Integrates Drupal with Bugsnag for error tracking and alerting.
+ */
+
+/**
+ * Implements hook_libraries_info().
+ */
+function bugsnag_libraries_info()
+{
+  $libraries['bugsnag'] = array(
+      'name' => 'bugsnag',
+  );
+
+  return $libraries;
+}
