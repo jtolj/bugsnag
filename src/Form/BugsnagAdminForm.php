@@ -45,7 +45,7 @@ class BugsnagAdminForm extends ConfigFormBase {
     return ['bugsnag.settings'];
   }
 
-  public function buildForm(array $form, \Drupal\Core\Form\FormStateInterface &$form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state) {
 
     $form['bugsnag_apikey'] = [
       '#type' => 'textfield',
