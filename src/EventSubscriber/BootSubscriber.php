@@ -28,11 +28,11 @@ class BootSubscriber implements EventSubscriberInterface {
       require_once $bugsnagLibraryPath;
       $bugsnag_client = new Bugsnag_Client(\Drupal::config('bugsnag.settings')->get('bugsnag_apikey'));
 
-      if ($user->uid) {
+      if ($user->id()) {
         $bugsnag_client->setUser([
-          'id' => $user->uid,
-          'name' => $user->name,
-          'email' => $user->mail,
+          'id' => $user->id(),
+          'name' => $user->getAccountName(),
+          'email' => $user->getEmail(),
         ]);
       }
 
