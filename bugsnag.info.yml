@@ -1,8 +1,6 @@
 name: Bugsnag
 description: 'Bugsnag v2+ integration'
 core: 8.x
-dependencies:
-  - libraries
 project: bugsnag
 type: module
 configure: bugsnag.admin_form
