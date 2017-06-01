@@ -7,6 +7,7 @@ use Bugsnag\Handler as BugsnagHandler;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\HttpKernel\Event\GetResponseEvent;
 
 class BootSubscriber implements EventSubscriberInterface {
 
@@ -27,7 +28,6 @@ class BootSubscriber implements EventSubscriberInterface {
     $this->config = $config_factory->get('bugsnag.settings');
   }
 
-
   /**
    * {@inheritdoc}
    */
@@ -35,16 +35,26 @@ class BootSubscriber implements EventSubscriberInterface {
     return [KernelEvents::REQUEST => ['onEvent', 255]];
   }
 
-  public function onEvent(\Symfony\Component\HttpKernel\Event\GetResponseEvent $event) {
+  /**
+   * Callback for KernelEvents::REQUEST.
+   *
+   * @param \Symfony\Component\HttpKernel\Event\GetResponseEvent $event
+   *   The event object.
+   */
+  public function onEvent(GetResponseEvent $event) {
     $apikey = trim($this->config->get('bugsnag_apikey'));
-    global $bugsnag;
-    if (!empty($apikey) && empty($bugsnag)) {
+    global $_bugsnag_client;
+    if (!empty($apikey) && empty($_bugsnag_client)) {
       $user = \Drupal::currentUser();
-      $bugsnag = BugsnagClient::make($apikey);
-      $bugsnag->setHostname($_SERVER['HTTP_HOST']);
+
+      $_bugsnag_client = BugsnagClient::make($apikey);
+
+      if (!empty($_SERVER['HTTP_HOST'])) {
+        $_bugsnag_client->setHostname($_SERVER['HTTP_HOST']);
+      }
 
       if ($user->id()) {
-        $bugsnag->registerCallback(function ($report) use ($user) {
+        $_bugsnag_client->registerCallback(function ($report) use ($user) {
           $report->setUser([
             'id' => $user->id(),
             'name' => $user->getAccountName(),
@@ -54,7 +64,7 @@ class BootSubscriber implements EventSubscriberInterface {
       }
 
       if ($this->config->get('bugsnag_log_exceptions')) {
-        BugsnagHandler::register($bugsnag);
+        BugsnagHandler::register($_bugsnag_client);
       }
 
     }

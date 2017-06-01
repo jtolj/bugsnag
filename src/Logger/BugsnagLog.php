@@ -50,21 +50,27 @@ class BugsnagLog implements LoggerInterface {
     $this->initializeBugsnag();
   }
 
+  /**
+   * Initialize the Bugsnag client if not initialized.
+   *
+   *  Workaround for KernelEvents::REQUEST not being triggered
+   *  by drush.
+   */
   protected function initializeBugsnag() {
 
-    global $bugsnag;
+    global $_bugsnag_client;
     $apikey = trim($this->config->get('bugsnag_apikey'));
 
-    if (!empty($apikey) && empty($bugsnag)) {
+    if (!empty($apikey) && empty($_bugsnag_client)) {
       $user = \Drupal::currentUser();
-      $bugsnag = BugsnagClient::make($apikey);
+      $_bugsnag_client = BugsnagClient::make($apikey);
 
       if (!empty($_SERVER['HTTP_HOST'])) {
-        $bugsnag->setHostname($_SERVER['HTTP_HOST']);
+        $_bugsnag_client->setHostname($_SERVER['HTTP_HOST']);
       }
 
       if ($user->id()) {
-        $bugsnag->registerCallback(function ($report) use ($user) {
+        $_bugsnag_client->registerCallback(function ($report) use ($user) {
           $report->setUser([
             'id' => $user->id(),
             'name' => $user->getAccountName(),
@@ -74,11 +80,11 @@ class BugsnagLog implements LoggerInterface {
       }
 
       if ($this->config->get('bugsnag_log_exceptions')) {
-        BugsnagHandler::register($bugsnag);
+        BugsnagHandler::register($_bugsnag_client);
       }
 
     }
-    $this->bugsnag = $bugsnag;
+    $this->bugsnag = $_bugsnag_client;
   }
 
   /**
@@ -91,7 +97,7 @@ class BugsnagLog implements LoggerInterface {
     }
 
     try {
-      // Get the log levels we've configured to send to bugsnag
+      // Get the log levels we've configured to send to bugsnag.
       $configured_levels = $this->config->get('bugsnag_logger');
 
       $logged_levels = [];
@@ -102,7 +108,7 @@ class BugsnagLog implements LoggerInterface {
       }
 
       if (in_array($level, $logged_levels)) {
-        // Populate the message placeholders and then replace them in the message.
+        // Populate the message placeholders and replace them in the message.
         $message_placeholders = $this->parser->parseMessagePlaceholders($message, $context);
         $message = empty($message_placeholders) ? $message : strtr($message, $message_placeholders);
 
