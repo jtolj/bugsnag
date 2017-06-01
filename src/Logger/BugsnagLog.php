@@ -10,7 +10,7 @@ use Drupal\Core\Logger\RfcLoggerTrait;
 use Psr\Log\LoggerInterface;
 
 /**
- * Logs events in the watchdog database table.
+ * Logs events to Bugsnag.
  */
 class BugsnagLog implements LoggerInterface {
   use RfcLoggerTrait;
