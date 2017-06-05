@@ -53,6 +53,12 @@ class BootSubscriber implements EventSubscriberInterface {
         $_bugsnag_client->setHostname($_SERVER['HTTP_HOST']);
       }
 
+      $release_stage = $this->config->get('release_stage');
+      if (empty($release_stage)) {
+        $release_stage = 'development';
+      }
+      $_bugsnag_client->setReleaseStage($release_stage);
+
       if ($user->id()) {
         $_bugsnag_client->registerCallback(function ($report) use ($user) {
           $report->setUser([

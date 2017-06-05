@@ -58,6 +58,18 @@ class BugsnagAdminForm extends ConfigFormBase {
       '#default_value' => $config->get('bugsnag_apikey'),
     ];
 
+    $release_stage = $config->get('release_stage');
+    $form['release_stage'] = [
+      '#type' => 'select',
+      '#required' => TRUE,
+      '#title' => $this->t('Release Stage'),
+      '#default_value' => (!empty($release_stage)) ? $release_stage : 'development' ,
+      '#options' => [
+        'development' => 'development',
+        'production' => 'production'
+      ],
+    ];
+
     $form['exception_handling'] = [
       '#type' => 'fieldgroup',
       '#title' => $this->t('Exception handling'),
