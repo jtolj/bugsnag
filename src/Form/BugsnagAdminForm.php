@@ -10,7 +10,6 @@ namespace Drupal\bugsnag\Form;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Logger\RfcLogLevel;
-use Drupal\Core\Render\Element;
 
 class BugsnagAdminForm extends ConfigFormBase {
 
@@ -24,28 +23,13 @@ class BugsnagAdminForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
-    $config = $this->config('bugsnag.settings');
-
-    foreach (Element::children($form) as $variable) {
-      $config->set($variable, $form_state->getValue($form[$variable]['#parents']));
-    }
-    $config->save();
-
-    if (method_exists($this, '_submitForm')) {
-      $this->_submitForm($form, $form_state);
-    }
-
-    parent::submitForm($form, $form_state);
+  protected function getEditableConfigNames() {
+    return ['bugsnag.settings'];
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function getEditableConfigNames() {
-    return ['bugsnag.settings'];
-  }
-
   public function buildForm(array $form, FormStateInterface $form_state) {
 
     $config = $this->config('bugsnag.settings');
@@ -94,10 +78,32 @@ class BugsnagAdminForm extends ConfigFormBase {
         'severity-' . RfcLogLevel::DEBUG => 'Debug',
         'severity-' . RfcLogLevel::INFO => 'Info'
       ],
-      '#default_value' => (null !== $config->get('bugsnag_logger')) ? $config->get('bugsnag_logger') : [],
+      '#default_value' => (NULL !== $config->get('bugsnag_logger')) ? $config->get('bugsnag_logger') : [],
     ];
 
     return parent::buildForm($form, $form_state);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function submitForm(array &$form, FormStateInterface $form_state) {
+    $config = $this->config('bugsnag.settings');
+    $values = $form_state->getValues();
+
+    $config->set('bugsnag_apikey', $values['bugsnag_apikey']);
+    $config->set('release_stage', $values['release_stage']);
+    $config->set('bugsnag_log_exceptions', $values['bugsnag_log_exceptions']);
+    $values['bugsnag_logger'] = array_values($values['bugsnag_logger']);
+    $config->set('bugsnag_logger', array_filter($values['bugsnag_logger']));
+
+    $config->save();
+
+    if (method_exists($this, '_submitForm')) {
+      $this->_submitForm($form, $form_state);
+    }
+
+    parent::submitForm($form, $form_state);
   }
 
 }

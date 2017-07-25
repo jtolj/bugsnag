@@ -9,9 +9,7 @@ Installation
 ------------
 
 1. Register for an account at http://bugsnag.com.
-2. Download the Bugsnag client (https://github.com/bugsnag/bugsnag-php/archive/v2.5.4.zip)
-   and extract the file under sites/all/libraries.
-3. Download and enable this module.
+2. Download and enable this module.
 
 
 Configuration
@@ -25,3 +23,4 @@ Maintainers
 -----------
 
 Drew Kennelly (drewkennelly): https://www.drupal.org/u/drewkennelly
+

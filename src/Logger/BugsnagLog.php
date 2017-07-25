@@ -2,8 +2,7 @@
 
 namespace Drupal\bugsnag\Logger;
 
-use Bugsnag\Client as BugsnagClient;
-use Bugsnag\Handler as BugsnagHandler;
+use Drupal\bugsnag\Client\BugsnagClient;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Logger\LogMessageParserInterface;
 use Drupal\Core\Logger\RfcLoggerTrait;
@@ -27,7 +26,7 @@ class BugsnagLog implements LoggerInterface {
    *
    * @var \Bugsnag\Client
    */
-  protected $bugsnag;
+  protected $client;
 
   /**
    * The message's placeholders parser.
@@ -41,56 +40,15 @@ class BugsnagLog implements LoggerInterface {
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The configuration factory object.
+   * @param \Drupal\bugsnag\Client\BugsnagClient $bugsnag
+   *   The BugsnagClient Service.
    * @param \Drupal\Core\Logger\LogMessageParserInterface $parser
    *   The parser to use when extracting message variables.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, LogMessageParserInterface $parser) {
+  public function __construct(ConfigFactoryInterface $config_factory, BugsnagClient $bugsnag, LogMessageParserInterface $parser) {
+    $this->client = $bugsnag->getClient();
     $this->config = $config_factory->get('bugsnag.settings');
     $this->parser = $parser;
-    $this->initializeBugsnag();
-  }
-
-  /**
-   * Initialize the Bugsnag client if not initialized.
-   *
-   *  Workaround for KernelEvents::REQUEST not being triggered
-   *  by drush.
-   */
-  protected function initializeBugsnag() {
-
-    global $_bugsnag_client;
-    $apikey = trim($this->config->get('bugsnag_apikey'));
-
-    if (!empty($apikey) && empty($_bugsnag_client)) {
-      $user = \Drupal::currentUser();
-      $_bugsnag_client = BugsnagClient::make($apikey);
-
-      if (!empty($_SERVER['HTTP_HOST'])) {
-        $_bugsnag_client->setHostname($_SERVER['HTTP_HOST']);
-      }
-
-      $release_stage = $this->config->get('release_stage');
-      if (empty($release_stage)) {
-        $release_stage = 'development';
-      }
-      $_bugsnag_client->setReleaseStage($release_stage);
-
-      if ($user->id()) {
-        $_bugsnag_client->registerCallback(function ($report) use ($user) {
-          $report->setUser([
-            'id' => $user->id(),
-            'name' => $user->getAccountName(),
-            'email' => $user->getEmail(),
-          ]);
-        });
-      }
-
-      if ($this->config->get('bugsnag_log_exceptions')) {
-        BugsnagHandler::register($_bugsnag_client);
-      }
-
-    }
-    $this->bugsnag = $_bugsnag_client;
   }
 
   /**
@@ -98,7 +56,7 @@ class BugsnagLog implements LoggerInterface {
    */
   public function log($level, $message, array $context = []) {
 
-    if (empty($this->bugsnag)) {
+    if (empty($this->client)) {
       return;
     }
 
@@ -119,7 +77,7 @@ class BugsnagLog implements LoggerInterface {
         $message = empty($message_placeholders) ? $message : strtr($message, $message_placeholders);
 
         // Log the item to bugsnag.
-        $this->bugsnag->notifyError($context['channel'], strip_tags($message), function ($report) use ($level) {
+        $this->client->notifyError($context['channel'], strip_tags($message), function ($report) use ($level) {
           if ($level < 2) {
             $severity = 'info';
           }
