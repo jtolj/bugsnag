@@ -64,7 +64,7 @@ class BugsnagClient {
         }
 
         if ($this->config->get('bugsnag_log_exceptions')) {
-          BugsnagHandler::register($_bugsnag_client);
+          BugsnagHandler::register($this->client);
         }
       }
       catch (\Exception $e) {
