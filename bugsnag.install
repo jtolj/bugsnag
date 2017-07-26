@@ -13,6 +13,8 @@
  */
 function bugsnag_requirements($phase) {
 
+  $requirements = [];
+
   // Check for client library.
   if (!class_exists('\Bugsnag\Client')) {
     $requirements['bugsnag_class'] = [
